@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>康軒五上第10單元互動式教學：柱體、錐體與球（Gemma 與 Qwen）</title>
+<style>
+  :root{
+    --bg:#f0f4f8;
+    --card:#ffffff;
+    --primary:#1d4ed8;
+    --primary-hover:#1e40af;
+    --accent:#059669;
+    --danger:#dc2626;
+    --warn:#d97706;
+    --muted:#64748b;
+    --line:#e2e8f0;
+    --shadow:0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue","Microsoft JhengHei","微軟正黑體","PingFang TC",sans-serif;
+    line-height:1.6;color:#1e293b;background:var(--bg);
+  }
+  a{color:var(--primary);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .container{max-width:1100px;margin:0 auto;padding:0}
+
+  /* Header & Progress */
+  header{
+    background:linear-gradient(135deg,var(--primary),var(--primary-hover));
+    color:#fff;padding:28px 24px;border-radius:0 0 var(--radius) var(--radius);
+    box-shadow:var(--shadow);position:sticky;top:0;z-index:50;background-clip:padding-box;
+  }
+  header h1{margin:0 0 6px;font-size:22px}
+  header p{margin:0;opacity:.95;font-size:14px}
+  .tag{
+    display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);
+    color:#fff;padding:2px 10px;border-radius:999px;font-size:12px;margin-right:8px
+  }
+  .progress-wrap{background:#fff;border-bottom:1px solid var(--line);padding:8px 24px;position:sticky;top:66px;z-index:40}
+  .progress-bar{height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden}
+  .progress-fill{height:100%;background:var(--accent);width:0%;transition:width .4s}
+  .progress-text{font-size:12px;color:var(--muted);margin-top:4px;display:flex;justify-content:space-between}
+
+  /* Nav */
+  nav{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:76px;z-index:45;overflow-x:auto}
+  nav ul{list-style:none;margin:0;padding:0 24px;display:flex;gap:6px;overflow-x:auto}
+  nav li a{
+    display:block;padding:10px 14px;border-radius:8px;color:var(--muted);font-size:13.5px;
+    border:1px solid transparent;white-space:nowrap
+  }
+  nav li a:hover{background:#f8fafc;color:var(--primary)}
+  nav li a.active{background:#eff6ff;color:var(--primary);border-color:#bfdbfe}
+
+  /* Sections */
+  main{padding:24px}
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    margin-bottom:24px;box-shadow:var(--shadow);overflow:hidden
+  }
+  section .sec-head{
+    background:#f8fafc;padding:18px 24px;border-bottom:1px solid var(--line);
+    cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none
+  }
+  section .sec-head h2{margin:0;font-size:17px;color:var(--primary);font-weight:700;display:flex;align-items:center;gap:10px}
+  section .sec-head h2 .num{background:var(--primary);color:#fff;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:13px}
+  section .sec-head .arrow{font-size:18px;color:var(--muted);transition:transform .2s}
+  section .sec-body{padding:0;max-height:0;overflow:hidden;transition:max-height .3s ease}
+  section.open .sec-body{max-height:2600px;overflow:visible;padding:24px}
+  section.open .arrow{transform:rotate(180deg)}
+  .done{color:var(--accent)!important}
+
+  /* Content helpers */
+  p{margin:0 0 12px}
+  code{
+    background:#f1f5f9;padding:1px 6px;border-radius:4px;font-family:ui-monospace,SFMono-Regular,"SF Mono","Consolas",monospace;font-size:13px;color:#c0392b
+  }
+  pre{
+    background:#0f172a;color:#e2e8f0;padding:14px;border-radius:8px;overflow-x:auto;
+    font-size:13px;line-height:1.5;margin:12px 0;position:relative
+  }
+  pre code{background:inherit;color:inherit;padding:0}
+  .copy-btn{
+    position:absolute;top:10px;right:10px;background:rgba(255,255,255,.15);color:#e2e8f0;
+    border:1px solid rgba(255,255,255,.3);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer
+  }
+  .copy-btn:hover{background:rgba(255,255,255,.25)}
+  .copied{color:#34d399!important}
+
+  .note{background:#e0f2fe;border-left:4px solid var(--primary);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0}
+  .warn{background:#fef3c7;border-left:4px solid var(--warn);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0}
+  .err{background:#fee2e2;border-left:4px solid var(--danger);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0}
+  .ok{color:var(--accent);font-weight:bold}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:10px;text-align:left}
+  th{background:#f8fafc;color:var(--muted)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:16px 0}
+  .card{border:1px solid var(--line);border-radius:10px;padding:16px;background:#fff}
+
+  .btn{
+    background:var(--primary);color:#fff;border:none;padding:10px 18px;border-radius:8px;
+    font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px
+  }
+  .btn:hover{background:var(--primary-hover)}
+  .btn.secondary{background:#f8fafc;color:#334155;border:1px solid var(--line)}
+  .btn.secondary:hover{background:#f1f5f9}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+  .btn.small{padding:6px 12px;font-size:13px}
+
+  /* Checklist */
+  .checklist{list-style:none;padding:0;margin:12px 0}
+  .checklist li{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:14px}
+  .checklist input{accent-color:var(--accent);width:18px;height:18px}
+
+  /* Platform tabs */
+  .platform{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+  .platform .tab{
+    flex:1;min-width:110px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:10px;
+    text-align:center;cursor:pointer;font-size:13px;color:var(--muted)
+  }
+  .platform .tab.active{border-color:var(--primary);color:var(--primary);background:#eff6ff}
+
+  /* Terminal */
+  .terminal{
+    background:#0b0c10;color:#c5c6c7;border:1px solid #1f2833;border-radius:8px;padding:16px;font-family:ui-monospace,SFMono-Regular,"SF Mono",Consolas,monospace;
+    font-size:13px;max-height:320px;overflow:auto;position:relative
+  }
+  .terminal .prompt{color:#4cd137;margin-right:6px}
+  .terminal .cmd{color:#a8f0ff}
+  .terminal .out{color:#c5c6c7;margin-left:22px}
+  .terminal input-line{margin:6px 0;display:flex;align-items:flex-start}
+  .terminal input{background:transparent;border:none;color:#fff;font:inherit;width:100%;outline:none;padding:0}
+  .terminal-hint{font-size:12px;color:#718096;margin-top:8px}
+
+  /* SVG figures */
+  .svg-wrap{text-align:center;margin:16px 0}
+  .svg-wrap svg{max-width:100%;height:auto;display:block;margin:0 auto}
+
+  /* Calculator */
+  .calc-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin:14px 0}
+  .calc-row label{font-size:14px;color:#475569}
+  input[type=number],select{padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:14px;width:120px}
+  #calcResult{margin-top:14px;padding:14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;display:none}
+  #calcSvg{margin:16px 0;text-align:center}
+  #calcSvg svg{max-width:260px;height:auto}
+
+  /* Quiz */
+  .q-card{border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:14px;background:#fff}
+  .q-card .q-num{display:inline-block;background:var(--primary);color:#fff;width:24px;height:24px;border-radius:50%;font-size:13px;text-align:center;margin-right:10px}
+  .options{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:10px}
+  .opt{padding:10px;border:2px solid var(--line);background:#fff;border-radius:8px;text-align:center;cursor:pointer;font-size:14px;transition:.15s}
+  .opt:hover{border-color:var(--primary);background:#eff6ff}
+  .opt.selected{border-color:var(--primary);background:#dbeafe;color:var(--primary)}
+  .opt.correct{background:#d1fae5;border-color:var(--accent);color:#065f46}
+  .opt.wrong{background:#fee2e2;border-color:var(--danger);color:#991b1b}
+  .feedback{margin-top:10px;padding:10px;border-radius:8px;display:none;font-size:14px}
+  .feedback.ok{background:#f0fdf4;color:#065f46;border:1px solid #bbf7d0}
+  .feedback.err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+  .quiz-score{font-size:18px;font-weight:bold;color:var(--primary);margin-top:14px;display:none}
+
+  /* Chat compare */
+  .chat-wrap{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px}
+  .chat-col{flex:1;min-width:280px;border:1px solid var(--line);border-radius:10px;background:#fff;display:flex;flex-direction:column}
+  .chat-head{padding:12px 16px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+  .chat-head.gemma{color:#1d4ed8}
+  .chat-head.qwen{color:#059669}
+  .chat-body{flex:1;padding:14px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+  .bubble{padding:10px 14px;border-radius:10px;font-size:14px;line-height:1.55;max-width:100%}
+  .bubble.user{background:#eff6ff;color:#1e40af;align-self:flex-start;border-bottom-left-radius:2px}
+  .bubble.model{background:#f1f5f9;color:#334155;align-self:flex-start}
+  .chat-footer{padding:10px 16px;border-top:1px solid var(--line);display:flex;gap:8px}
+  .chat-footer input{flex:1;padding:10px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px}
+  .chat-topic{margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap}
+  .chip{padding:6px 12px;border:1px solid var(--line);border-radius:20px;background:#fff;cursor:pointer;font-size:13px;color:var(--muted)}
+  .chip.active{border-color:var(--primary);background:#eff6ff;color:var(--primary)}
+  .chip:hover{border-color:var(--primary)}
+
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:32px 24px;border-top:1px solid var(--line)}
+  .em{font-size:20px}
+
+  @media (max-width:640px){
+    header{padding:20px 16px}
+    header h1{font-size:18px}
+    .progress-wrap{padding:8px 16px;top:60px}
+    nav{top:70px}
+    nav ul{padding:0 16px}
+    main{padding:16px}
+    .chat-wrap{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span class="tag">康軒版 五上 第10單元</span>
+    <span class="tag">離線自包含</span>
+  </div>
+  <h1>柱體、錐體與球 — 互動式教學網站</h1>
+  <p>以 <strong>Gemma 4 26B</strong> 與 <strong>Qwen 3</strong> 在本機跑大語言模型，從安裝到跑通。全部圖片內嵌，離線雙擊即可使用。</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+  <div class="progress-text"><span id="progressLabel">進度 0%</span><span id="progressCount">0 / 10 章完成</span></div>
+</div>
+
+<nav>
+  <ul id="navList"></ul>
+</nav>
+
+<main>
+  <!-- 1. 單元介紹 -->
+  <section id="s1" data-order="1">
+    <div class="sec-head" onclick="toggle('s1')"><h2><span class="num">1</span>單元知識速查<span id="d1" class="done" style="display:none;margin-left:8px">✔</span></h2><span class="arrow">▾</span></div>
+    <div class="sec-body">
+      <p>康軒版五年級上冊第10單元「柱體、錐體與球」，是進入立體幾何的關鍵單元。你將學習柱體、錐體與球的特徵，並計算體積與表面積。</p>
+
+      <div class="svg-wrap">
+        <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" aria-label="柱體、錐體、球示意圖">
+          <title>柱體、錐體、球示意圖</title>
+          <defs>
+            <linearGradient id="gCyl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3f2fd"/><stop offset="1" stop-color="#bbdefb"/></linearGradient>
+            <linearGradient id="gCone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3e0"/><stop offset="1" stop-color="#ffe0b2"/></linearGradient>
+            <linearGradient id="gSphere" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e1f5fe"/><stop offset="1" stop-color="#b3e5fc"/></linearGradient>
+          </defs>
+          <g transform="translate(70,30)">
+            <ellipse cx="45" cy="130" rx="38" ry="14" fill="url(#gCyl)"/>
+            <path d="M7 130 Q7 32 45 32 Q83 32 83 130" fill="#cfe3f7"/>
+            <line x1="7" y1="130" x2="7" y2="32" stroke="#90caf9" stroke-width="2"/>
+            <line x1="83" y1="130" x2="83" y2="32" stroke="#90caf9" stroke-width="2"/>
+            <text x="45" y="170" text-anchor="middle" font-size="17" fill="#1d4ed8" font-weight="bold">圓柱體</text>
+            <text x="90" y="80" font-size="13" fill="#334155">h</text>
+            <text x="50" y="124" font-size="13" fill="#334155">r</text>
+            <text x="45" y="200" text-anchor="middle" font-size="13" fill="#64748b">V = π × r² × h</text>
+          </g>
+          <g transform="translate(330,30)">
+            <ellipse cx="45" cy="130" rx="38" ry="14" fill="url(#gCone)"/>
+            <path d="M7 130 L45 32 L83 130 Z" fill="#ffcc80"/>
+            <line x1="7" y1="130" x2="83" y2="130" stroke="#ffb74d" stroke-width="2"/>
+            <text x="45" y="170" text-anchor="middle" font-size="17" fill="#1d4ed8" font-weight="bold">圓錐體</text>
+            <text x="90" y="80" font-size="13" fill="#334155">h</text>
+            <text x="50" y="124" font-size="13" fill="#334155">r</text>
+            <text x="45" y="200" text-anchor="middle" font-size="13" fill="#64748b">V = ⅓ × π × r² × h</text>
+          </g>
+          <g transform="translate(570,30)">
+            <circle cx="45" cy="80" r="38" fill="url(#gSphere)" stroke="#4fc3f7" stroke-width="2"/>
+            <circle cx="45" cy="80" r="3.5" fill="#1565c0"/>
+            <path d="M45 42 Q65 80 45 118 Q25 80 45 42" fill="none" stroke="#4fc3f7" stroke-width="1.5" stroke-dasharray="2,2"/>
+            <text x="45" y="140" text-anchor="middle" font-size="17" fill="#1d4ed8" font-weight="bold">球</text>
+            <text x="85" y="80" font-size="13" fill="#334155">r</text>
+            <text x="45" y="200" text-anchor="middle" font-size="13" fill="#64748b">V = 4/3 × π × r³</text>
+          </g>
+        </svg>
+      </div>
+
+      <table>
+        <thead><tr><th>圖形</th><th>體積公式</th><th>表面積公式（參考）</th><th>康軒教學重點</th></tr></thead>
+        <tbody>
+          <tr><td><strong>圓柱體</strong></td><td>V = π × r² × h</td><td>2πr² + 2πrh</td><td>底面積 × 高</td></tr>
+          <tr><td><strong>圓錐體</strong></td><td>V = ⅓ × π × r² × h</td><td>πr² + πr × √(r²+h²)</td><td>體積是相同底面與高的圓柱的三分之一</td></tr>
+          <tr><td><strong>球</strong></td><td>V = 4/3 × π × r³</td><td>4πr²</td><td>以半徑 r 計算；無頂點、無棱、無面</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>例題（π 取 3.14）：</strong> 半徑 4 公分、高 10 公分的圓柱體積 = 3.14 × 4 × 4 × 10 = <strong>502.4 立方公分</strong>。</div>
+      <div style="text-align:right"><button class="btn small" onclick="markDone(1)">我已完成本章</button></div>
+    </div>
+  </section>
+
+  <!-- 2. 安裝 Ollama -->
+  <section id="s2" data-order="2">
+    <div class="sec-head" onclick="toggle('s2')"><h2><span class="num">2</span>第1步：安裝 Ollama<span id="d2" class="done" style="display:none;margin-left:8px">✔</span></h2><span class="arrow">▾</span></div>
+    <div class="sec-body">
+      <p><strong>Ollama</strong> 是在個人電腦上輕鬆運行大語言模型的工具。安裝後可在終端機下載並對話 Gemma、Qwen 等模型，全部在本機運行。</p>
+      <div class="platform">
+        <div class="tab active" onclick="setPlatform(this,'win')">Windows</div>
+        <div class="tab" onclick="setPlatform(this,'mac')">macOS</div>
+        <div class="tab" onclick="setPlatform(this,'lin')">Linux</div>
+      </div>
+      <div id="platWin" class="note">
+        <ol>
+          <li>前往 <code>ollama.com</code> 下載 Windows 安裝程式。</li>
+          <li>雙擊安裝，依指示完成。</li>
+          <li>開啟「命令提示字元」或 PowerShell，輸入 <code>ollama --version</code>。</li>
+        </ol>
+      </div>
+      <div id="platMac" class="note" style="display:none">
+        <ol>
+          <li>前往 <code>ollama.com</code> 下載 macOS 版，或用 Homebrew：<code>brew install ollama</code>。</li>
+          <li>開啟「終端機」，輸入 <code>ollama --version</code>。</li>
+        </ol>
+      </div>
+      <div id="platLin" class="note" style="display:none">
+        <ol>
+          <li>在終端機執行：<code>curl -fsSL https://ollama.com/install.sh | sh</code></li>
+          <li>輸入 <code>ollama --version</code> 驗證。</li>
+        </ol>
+      </div>
+
+      <h3 style="margin-top:18px;font-size:16px">安裝檢查清單</h3>
+      <ul class="checklist">
+        <li><label><input type="checkbox" onchange="updateProgress()"> 已下載並安裝 Ollama</label></li>
+        <li><label><input type="checkbox" onchange="updateProgress()"> 終端機可輸出 ollama 版本號</label></li>
+      </ul>
+      <div style="text-align:right"><button class="btn small" onclick="markDone(2)">我已完成本章</button></div>
+    </div>
+  </section>
+
+  <!-- 3. 驗證安裝 / 模擬終端 -->
+  <section id="s3" data-order="3">
+    <div class="sec-head" onclick="toggle('s3')"><h2><span class="num">3</span>第2步：驗證安裝<span id="d3" class="done" style="display:none;margin-left:8px">✔</span></h2><span class="arrow">▾</span></div>
+    <div class="sec-body">
+      <p>安裝完成後，在終端機輸入：</p>
+      <pre><code>ollama --version</code></pre>
+      <p>若顯示版本號（例如 <code>ollama version is 0.5.7</code>），代表安裝成功。</p>
+
+      <h3 style="font-size:16px;margin-top:18px">模擬終端機（互動練習）</h3>
+      <div class="terminal" id="term">
+        <div class="input-line"><span class="prompt">&gt;</span> <span class="cmd">ollama --version</span></div>
+        <div class="out">ollama version is 0.5.7</div>
+        <div class="input-line"><span class="prompt">&gt;</span> <span id="termInput" class="cmd"></span><input id="termBox" placeholder="輸入指令後按 Enter" autocomplete="off"></div>
+      </div>
+      <div class="terminal-hint">提示：嘗試輸入 <code>ollama --version</code>、<code>ollama list</code>、<code>ollama pull gemma3:4b</code>（這只是模擬，不會真的下載）。</div>
+      <div style="text-align:right"><button class="btn small" onclick="markDone(3)">我已完成本章</button></div>
+    </div>
+  </section>
+
+  <!-- 4. Gemma -->
+  <section id="s4" data-order="4">
+    <div class="sec-head" onclick="toggle('s4')"><h2><span class="num">4</span>第3步：跑通 Gemma 4 26B<span id="d4" class="done" style="display:none;margin-left:8px">✔</span></h2><span class="arrow">▾</span></div>
+    <div class="sec-body">
+      <div class="warn"><strong>模型名稱說明：</strong> Gemma 家族常見 Ollama 標籤為 <code>gemma3:4b</code>、<code>gemma2:27b</code> 等。若找不到 <code>gemma4:26b</code>，改用可用版本（如 <code>gemma3:4b</code>），步驟完全相同。27B 級大模型約需 16–20 GB 記憶體。</div>
+
+      <h3 style="font-size:16px;margin-top:16px">下載與運行</h3>
+      <pre><code id="gemmaCmd">ollama pull gemma4:26b
+ollama run gemma4:26b</code><button class="copy-btn" onclick="copyCode('gemmaCmd')">複製</button></pre>
+
+      <h3 style="font-size:16px;margin-top:16px">對話範例</h3>
+      <p>進入 <code>ollama run 模型名</code> 後，貼入以下提示詞：</p>
+      <pre><code>請用國小五年級學生聽得懂的話，解釋「圓柱體體積公式 V = π × r² × h」，並舉一個例題。</code></pre>
+      <div class="card" style="background:#f8fafc;border-left:4px solid var(--primary);">
+        <p><strong>Gemma 4 26B 回答示意：</strong></p>
+        <p>圓柱體的體積公式是：<strong>V = 底面積 × 高 = π × r² × h</strong></p>
+        <p>舉例：半徑 3 公分、高 5 公分的圓柱，<br>V = 3.14 × 3 × 3 × 5 = <strong>141.3 立方公分</strong>。</p>
+        <p class="muted" style="font-size:13px">（實際回答會隨模型版本而不同，以上為示範格式。）</p>
+      </div>
+      <p>離開對話：輸入 <code>/bye</code> 或按 <code>Ctrl + D</code>。</p>
+      <div style="text-align:right"><button class="btn small" onclick="markDone(4)">我已完成本章</button></div>
+    </div>
+  </section>
+
+  <!-- 5. Qwen -->
+  <section id="s5" data-order="5">
+    <div class="sec-head" onclick="toggle('s5')"><h2><span class="num">5</span>第4步：跑通 Qwen 3<span id="d5" class="done" style="display:none;margin-left:8px">✔</span></h2><span class="arrow">▾</span></div>
+    <div class="sec-body">
+      <div class="note"><strong>Qwen 3 常見標籤：</strong><code>qwen3:4b</code>、<code>qwen3:8b</code>、<code>qwen3:14b</code>、<code>qwen3:32b</code>。記憶體較小建議先用 <code>qwen3:4b</code> 或 <code>qwen3:8b</code>。</div>
+
+      <h3 style="font-size:16px;margin-top:16px">下載與運行</h3>
+      <pre><code id="qwenCmd">ollama pull qwen3:8b
+ollama run qwen3:8b</code><button class="copy-btn" onclick="copyCode('qwenCmd')">複製</button></pre>
+
+      <h3 style="font-size:16px;margin-top:16px">對話範例</h3>
+      <p>貼入以下提示詞：</p>
+      <pre><code>請解釋圓錐體與球的體積公式差異，並說明為什麼圓錐體積是圓柱的三分之一。</code></pre>
+      <div class="card" style="background:#fffbeb;border-left:4px solid var(--warn);">
+        <p><strong>Qwen 3 回答示意：</strong></p>
+        <p><strong>圓錐體積：</strong> V = ⅓ × π × r² × h</p>
+        <p><strong>球體積：</strong> V = 4/3 × π × r³，球表面積 = 4πr²</p>
+        <p>為什麼圓錐是三分之一？想像用同樣底面和高的圓錐去盛水，倒三次剛好裝滿一個圓柱。</p>
+      </div>
+      <div style="text-align:right"><button class="btn small" onclick="markDone(5)">我已完成本章</button></div>
+    </div>
+  </section>
+
+  <!-- 6. 比較 -->
+  <section id="s6" data-order="6">
+    <div class="sec-head" onclick="toggle('s6')"><h2><span class="num">6</span>第5步：兩模型同題比較<span id="d6" class="done" style="display:none;margin-left:8px">✔</span></h2><span class="arrow">▾</span></div>
+    <div class="sec-body">
+      <p>把同一題交給兩個模型，觀察回答風格差異。以下為模擬示意，實際以你本機模型回覆為準。</p>
+
+      <div class="chat-topic">
+        <div class="chip active" onclick="setChatTopic(this,'cyl')">圓柱體積</div>
+        <div class="chip" onclick="setChatTopic(this,'cone')">圓錐 vs 球</div>
+        <div class="chip" onclick="setChatTopic(this,'why')">為什麼三分之一</div>
+      </div>
+
+      <div class="chat-wrap">
+        <div class="chat-col">
+          <div class="chat-head gemma">💎 Gemma 4 26B</div>
+          <div class="chat-body" id="chatGemma"></div>
+        </div>
+        <div class="chat-col">
+          <div class="chat-head qwen">🧠 Qwen 3</div>
+          <div class="chat-body" id="chatQwen"></div>
+        </div>
+      </div>
+      <div style="text-align:right"><button class="btn small" onclick="markDone(6)">我已完成本章</button></div>
+    </div>
+  </section>
+
+  <!-- 7. 練習測驗 -->
+  <section id="s7" data-order="7">
+    <div class="sec-head" onclick="toggle('s7')"><h2><span class="num">7</span>第6步：離線練習測驗<span id="d7" class="done" style="display:none;margin-left:8px">✔</span></h2><span class="arrow">▾</span></div>
+    <div class="sec-body">
+      <p>回答完全部題目後會即時給分與解說，幫助鞏固公式。</p>
+
+      <div id="quizBox">
+        <div class="q-card">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span class="q-num">1</span><strong>半徑 3 公分、高 5 公分的圓柱體積是多少？（π = 3.14）</strong></div>
+          <div class="options">
+            <div class="opt" onclick="pickQuiz(1,this,'141.3')">141.3 立方公分</div>
+            <div class="opt" onclick="pickQuiz(1,this,'282.6')">282.6 立方公分</div>
+            <div class="opt" onclick="pickQuiz(1,this,'47.1')">47.1 立方公分</div>
+          </div>
+          <div class="feedback" id="fb1"></div>
+        </div>
+
+        <div class="q-card">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span class="q-num">2</span><strong>同樣底面與高的圓錐體積，是圓柱體積的幾分之幾？</strong></div>
+          <div class="options">
+            <div class="opt" onclick="pickQuiz(2,this,'1/2')>二分之一</div>
+            <div class="opt" onclick="pickQuiz(2,this,'1/3')>三分之一</div>
+            <div class="opt" onclick="pickQuiz(2,this,'1/4')>四分之一</div>
+          </div>
+          <div class="feedback" id="fb2"></div>
+        </div>
+
+        <div class="q-card">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span class="q-num">3</span><strong>半徑 3 公分的球體積約是多少？（π = 3.14）</strong></div>
+          <div class="options">
+            <div class="opt" onclick="pickQuiz(3,this,'113.04')">113.04 立方公分</div>
+            <div class="opt" onclick="pickQuiz(3,this,'56.52')">56.52 立方公分</div>
+            <div class="opt" onclick="pickQuiz(3,this,'226.08')">226.08 立方公分</div>
+          </div>
+          <div class="feedback" id="fb3"></div>
+        </div>
+
+        <div class="q-card">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span class="q-num">4</span><strong>球的表面積公式是？</strong></div>
+          <div class="options">
+            <div class="opt" onclick="pickQuiz(4,this,'4πr²')">4πr²</div>
+            <div class="opt" onclick="pickQuiz(4,this,'2πr²')">2πr²</div>
+            <div class="opt" onclick="pickQuiz(4,this,'πr²')">πr²</div>
+          </div>
+          <div class="feedback" id="fb4"></div>
+        </div>
+      </div>
+      <div class="quiz-score" id="quizScore"></div>
+      <button class="btn" onclick="resetQuiz()" style="display:none" id="btnResetQuiz">重新作答</button>
+      <div style="text-align:right"><button class="btn small" onclick="markDone(7)">我已完成本章</button></div>
+    </div>
+  </section>
+
+  <!-- 8. 計算機 -->
+  <section id="s8" data-order="8">
+    <div class="sec-head" onclick="toggle('s8')"><h2><span class="num">8</span>第7步：互動式體積計算機<span id="d8" class="done" style="display:none;margin-left:8px">✔</span></h2><span class="arrow">▾</span></div>
+    <div class="sec-body">
+      <p>純前端 JavaScript 計算機，不需要模型，離線即可使用。修改數值會即時重新計算。</p>
+
+      <div class="calc-row">
+        <label>半徑 r：<input type="number" id="r" value="3" step="0.1" oninput="calcVolume()"></label>
+        <label>高 h：<input type="number" id="h" value="5" step="0.1" oninput="calcVolume()"></label>
+        <label>形狀：
+          <select id="shape" onchange="calcVolume()">
+            <option value="cyl">圓柱體</option>
+            <option value="cone">圓錐體</option>
+            <option value="sphere">球</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="calcSvg">
+        <svg id="figSvg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+
+      <div id="calcResult">
+        <strong>公式：</strong><span id="resFormula"></span><br>
+        <strong>體積 V =</strong> <span id="resV"></span> 立方單位&nbsp;&nbsp;
+        <strong>表面積 =</strong> <span id="resS"></span> 平方單位
+      </div>
+      <div class="note"><strong>小提示：</strong> 球不需要輸入高 h；圓錐與圓柱都需要半徑與高。</div>
+      <div style="text-align:right"><button class="btn small" onclick="markDone(8)">我已完成本章</button></div>
+    </div>
+  </section>
+
+  <!-- 9. API -->
+  <section id="s9" data-order="9">
+    <div class="sec-head" onclick="toggle('s9')"><h2><span class="num">9</span>第8步：進階 HTTP API 呼叫<span id="d9" class="done" style="display:none;margin-left:8px">✔</span></h2><span class="arrow">▾</span></div>
+    <div class="sec-body">
+      <p>Ollama 預設在 <code>http://localhost:11434</code> 提供 API，可用程式呼叫本機模型。</p>
+
+      <div class="form-row" style="margin-bottom:14px">
+        <label>模型名稱：</label>
+        <input type="text" id="apiModel" value="gemma3:4b" placeholder="例如 gemma3:4b">
+        <button class="btn" onclick="tryApi()">嘗試連線本機 Ollama</button>
+        <button type="button" class="btn secondary" onclick="document.getElementById('apiOut').innerHTML='';document.getElementById('apiOut').style.display='none'">清除</button>
+      </div>
+      <div id="apiOut" style="margin-top:10px;padding:12px;background:#f1f5f9;border-radius:8px;display:none;font-size:13px;white-space:pre-wrap"></div>
+
+      <h3 style="font-size:16px;margin-top:18px">呼叫範例</h3>
+      <pre><code># curl
+curl http://localhost:11434/api/generate -d '{
+  "model": "gemma3:4b",
+  "prompt": "請用一句話解釋圓柱體體積公式",
+  "stream": false
+}'
+
+# Python
+import requests
+r = requests.post("http://localhost:11434/api/generate", json={
+  "model": "qwen3:8b",
+  "prompt": "圓錐體積公式是什麼？",
+  "stream": False
+})
+print(r.json()["response"])</code><button class="copy-btn" onclick="copyCode('apiBlock')">複製</button></pre>
+      <div class="err" id="apiNote" style="display:none">
+        連線失敗代表本機尚未啟動 Ollama，請先執行 <code>ollama serve</code> 或 <code>ollama run 模型名</code>。
+      </div>
+      <div style="text-align:right"><button class="btn small" onclick="markDone(9)">我已完成本章</button></div>
+    </div>
+  </section>
+
+  <!-- 10. 排錯 -->
+  <section id="s10" data-order="10">
+    <div class="sec-head" onclick="toggle('s10')"><h2><span class="num">10</span>常見問題排錯<span id="d10" class="done" style="display:none;margin-left:8px">✔</span></h2><span class="arrow">▾</span></div>
+    <div class="sec-body">
+      <table>
+        <thead><tr><th>問題</th><th>可能原因</th><th>解決方式</th></tr></thead>
+        <tbody>
+          <tr><td>'ollama' 不是內部或外部命令</td><td>未安裝或未加入 PATH</td><td>重新安裝 Ollama，或重新開啟終端機後再試</td></tr>
+          <tr><td>ollama pull 失敗或很慢</td><td>網路問題、模型檔案太大</td><td>檢查網路、確認磁碟空間，改用較小模型（如 4b / 8b）</td></tr>
+          <tr><td>連線 localhost:11434 失敗</td><td>Ollama 背景服務未啟動</td><td>執行 <code>ollama serve</code> 或 <code>ollama run 模型名</code></td></tr>
+          <tr><td>記憶體不足，模型跑不起來</td><td>模型太大（27B 級需 16 GB 以上記憶體）</td><td>換較小模型（gemma3:4b、qwen3:4b / 8b）</td></tr>
+          <tr><td>HTML 圖片沒顯示</td><td>用錯誤程式開啟、檔案損壞</td><td>直接用 Chrome/Edge/Safari 雙擊本 HTML，所有圖皆內嵌 SVG，不需網路</td></tr>
+        </tbody>
+      </table>
+      <div style="text-align:right"><button class="btn small" onclick="markDone(10)">我已完成本章</button></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  本教學為單一自包含 HTML 檔，所有圖片皆為內嵌 SVG，離線雙擊即可開啟。<br>
+  主題：康軒版五年級上冊第10單元「柱體、錐體與球」 | 模型：Gemma 4 26B 與 Qwen 3
+</footer>
+
+</div>
+
+<script>
+  const ORDER = 10;
+  let done = JSON.parse(localStorage.getItem('kh_done') || '{}');
+
+  // Nav build
+  function buildNav(){
+    const list = document.getElementById('navList');
+    for(let i=1;i<=ORDER;i++){
+      const sec = document.getElementById('s'+i);
+      const title = sec.querySelector('.sec-head h2').innerText.replace(/✔/g,'').trim();
+      const li = document.createElement('li');
+      li.innerHTML = `<a href="#s${i}" onclick="scrollToSection(${i})">${i}. ${title}</a>`;
+      list.appendChild(li);
+    }
+    updateProgress();
+    highlightNav();
+  }
+  window.addEventListener('scroll', highlightNav);
+
+  function scrollToSection(i){
+    document.getElementById('s'+i).scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  function highlightNav(){
+    const links = document.querySelectorAll('nav a');
+    let cur = null;
+    for(let i=ORDER;i>=1;i--){
+      const rect = document.getElementById('s'+i).getBoundingClientRect();
+      if(rect.top <= 150){ cur = i; break; }
+    }
+    links.forEach((a,idx)=>{
+      a.classList.toggle('active', (idx+1)===cur);
+    });
+  }
+
+  function toggle(id){
+    const sec = document.getElementById(id);
+    sec.classList.toggle('open');
+  }
+
+  function markDone(order){
+    done[order] = true;
+    localStorage.setItem('kh_done', JSON.stringify(done));
+    const el = document.getElementById('d'+order);
+    if(el) el.style.display = 'inline';
+    const btn = document.querySelector(`#s${order} .btn.small`);
+    if(btn){ btn.textContent = '已完成'; btn.classList.add('done'); btn.disabled = true; }
+    updateProgress();
+    highlightNav();
+  }
+
+  function updateProgress(){
+    let c = 0;
+    for(let i=1;i<=ORDER;i++) if(done[i]) c++;
+    const pct = Math.round((c/ORDER)*100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = '進度 ' + pct + '%';
+    document.getElementById('progressCount').textContent = c + ' / ' + ORDER + ' 章完成';
+  }
+
+  // Platform tabs
+  function setPlatform(el, plat){
+    document.querySelectorAll('.platform .tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+    ['platWin','platMac','platLin'].forEach(id=>document.getElementById(id).style.display='none');
+    document.getElementById('plat'+plat.charAt(0).toUpperCase()+plat.slice(1)).style.display='block';
+  }
+
+  // Terminal simulation
+  const termBox = document.getElementById('termBox');
+  const termInput = document.getElementById('termInput');
+  const term = document.getElementById('term');
+  termBox.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){
+      const cmd = this.value.trim();
+      termInput.textContent = cmd;
+      this.value = '';
+      const line = document.createElement('div');
+      line.className = 'input-line';
+      line.innerHTML = '<span class="prompt">&gt;</span> <span class="cmd"></span><input class="termIn" placeholder="輸入指令後按 Enter" autocomplete="off">';
+      term.appendChild(line);
+      const out = document.createElement('div');
+      out.className = 'out';
+      term.appendChild(out);
+      const newInput = line.querySelector('input');
+      newInput.focus();
+      newInput.addEventListener('keydown', function f(ev){
+        if(ev.key === 'Enter'){
+          const c = this.value.trim();
+          this.parentElement.querySelector('.cmd').textContent = c;
+          this.value = '';
+          out.textContent = simulateCmd(c);
+          term.appendChild(makeLine());
+          term.scrollTop = term.scrollHeight;
+          this.removeEventListener('keydown', f);
+        }
+      });
+      out.textContent = simulateCmd(cmd);
+      term.scrollTop = term.scrollHeight;
+    }
+  });
+  function makeLine(){
+    const line = document.createElement('div');
+    line.className = 'input-line';
+    line.innerHTML = '<span class="prompt">&gt;</span> <span class="cmd"></span><input class="termIn" placeholder="輸入指令後按 Enter" autocomplete="off">';
+    term.appendChild(line);
+    const inp = line.querySelector('input');
+    inp.focus();
+    inp.addEventListener('keydown', function f(ev){
+      if(ev.key === 'Enter'){
+        const c = this.value.trim();
+        this.parentElement.querySelector('.cmd').textContent = c;
+        this.value = '';
+        const out = document.createElement('div'); out.className = 'out';
+        term.appendChild(out);
+        term.appendChild(makeLine());
+        out.textContent = simulateCmd(c);
+        term.scrollTop = term.scrollHeight;
+        this.removeEventListener('keydown', f);
+      }
+    });
+    return line;
+  }
+  function simulateCmd(c){
+    if(c === 'ollama --version') return 'ollama version is 0.5.7';
+    if(c === 'ollama list') return 'NAME\t\t\tSIZE\t\t\tUPDATED\ngemma3:4b\t\t2.2 GB\t\t2 days ago\nqwen3:8b\t\t4.9 GB\t\t1 day ago';
+    if(c.startsWith('ollama pull')) return '正在下載模型（模擬中）… 已完成';
+    if(c.startsWith('ollama run')) return '>>> 請輸入你的問題（模擬對話中）…';
+    if(c === '') return '';
+    return '指令不 recognised：' + c;
+  }
+
+  // Copy code
+  function copyCode(id){
+    const block = document.getElementById(id);
+    if(!block) return;
+    const text = block.innerText;
+    navigator.clipboard.writeText(text).then(()=>{
+      const btn = block.parentElement.querySelector('.copy-btn');
+      const old = btn.textContent;
+      btn.textContent = '已複製'; btn.classList.add('copied');
+      setTimeout(()=>{ btn.textContent = old; btn.classList.remove('copied'); }, 1200);
+    });
+  }
+
+  // Calculator
+  function calcVolume(){
+    const r = parseFloat(document.getElementById('r').value);
+    const h = parseFloat(document.getElementById('h').value);
+    const shape = document.getElementById('shape').value;
+    if(!r || r <= 0){ document.getElementById('calcResult').style.display='none'; return; }
+    const pi = Math.PI; let V=0,S=0,formula='';
+    const svg = document.getElementById('figSvg');
+    svg.innerHTML = '';
+    if(shape === 'cyl'){
+      V = pi * r * r * h; S = 2*pi*r*r + 2*pi*r*h; formula = 'V = π × r² × h';
+      drawCyl(svg, r, h);
+    } else if(shape === 'cone'){
+      V = (1/3)*pi*r*r*h; S = pi*r*r + pi*r*Math.sqrt(r*r+h*h); formula = 'V = ⅓ × π × r² × h';
+      drawCone(svg, r, h);
+    } else {
+      V = (4/3)*pi*r*r*r; S = 4*pi*r*r; formula = 'V = 4/3 × π × r³';
+      drawSphere(svg, r);
+    }
+    const res = document.getElementById('calcResult');
+    res.style.display = 'block';
+    document.getElementById('resFormula').textContent = formula;
+    document.getElementById('resV').textContent = V.toFixed(2);
+    document.getElementById('resS').textContent = S.toFixed(2);
+  }
+  function drawCyl(svg,r,h){
+    const scale = 160 / Math.max(r,h);
+    const cx = 110, cy = 140;
+    const rx = r*scale, ry = 14;
+    const topY = cy - h*scale;
+    const grad = svg.ownerDocument ? null : null;
+    const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+    const lg = document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
+    lg.setAttribute('id','cylG'); lg.setAttribute('x1','0'); lg.setAttribute('y1','0'); lg.setAttribute('x2','0'); lg.setAttribute('y2','1');
+    lg.innerHTML = '<stop offset="0" stop-color="#e3f2fd"/><stop offset="1" stop-color="#bbdefb"/>';
+    defs.appendChild(lg); svg.appendChild(defs);
+    const bottom = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+    bottom.setAttribute('cx',cx); bottom.setAttribute('cy',cy); bottom.setAttribute('rx',rx); bottom.setAttribute('ry',ry); bottom.setAttribute('fill','url(#cylG)');
+    svg.appendChild(bottom);
+    const side = document.createElementNS('http://www.w3.org/2000/svg','path');
+    side.setAttribute('d',`M${cx-rx} ${cy} Q${cx-rx} ${topY} ${cx} ${topY} Q${cx+rx} ${topY} ${cx+rx} ${cy}`);
+    side.setAttribute('fill','#cfe3f7'); svg.appendChild(side);
+    const l1 = document.createElementNS('http://www.w3.org/2000/svg','line'); l1.setAttribute('x1',cx-rx); l1.setAttribute('y1',cy); l1.setAttribute('x2',cx-rx); l1.setAttribute('y2',topY); l1.setAttribute('stroke','#90caf9'); l1.setAttribute('stroke-width','2'); svg.appendChild(l1);
+    const l2 = document.createElementNS('http://www.w3.org/2000/svg','line'); l2.setAttribute('x1',cx+rx); l2.setAttribute('y1',cy); l2.setAttribute('x2',cx+rx); l2.setAttribute('y2',topY); l2.setAttribute('stroke','#90caf9'); l2.setAttribute('stroke-width','2'); svg.appendChild(l2);
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text'); t.setAttribute('x',cx+rx+6); t.setAttribute('y',(cy+topY)/2); t.textContent='h'; t.setAttribute('fill','#334155'); t.setAttribute('font-size','13'); svg.appendChild(t);
+    const tr = document.createElementNS('http://www.w3.org/2000/svg','text'); tr.setAttribute('x',cx); tr.setAttribute('y',cy-6); tr.textContent='r'; tr.setAttribute('fill','#334155'); tr.setAttribute('font-size','13'); tr.setAttribute('text-anchor','middle'); svg.appendChild(tr);
+  }
+  function drawCone(svg,r,h){
+    const scale = 140 / Math.max(r,h);
+    const cx = 110, cy = 140;
+    const rx = r*scale, ry = 14; const topY = cy - h*scale;
+    const bottom = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+    bottom.setAttribute('cx',cx); bottom.setAttribute('cy',cy); bottom.setAttribute('rx',rx); bottom.setAttribute('ry',ry); bottom.setAttribute('fill','#ffe0b2'); svg.appendChild(bottom);
+    const tri = document.createElementNS('http://www.w3.org/2000/svg','path');
+    tri.setAttribute('d',`M${cx-rx} ${cy} L${cx} ${topY} L${cx+rx} ${cy} Z`);
+    tri.setAttribute('fill','#ffcc80'); svg.appendChild(tri);
+    const base = document.createElementNS('http://www.w3.org/2000/svg','line'); base.setAttribute('x1',cx-rx); base.setAttribute('y1',cy); base.setAttribute('x2',cx+rx); base.setAttribute('y2',cy); base.setAttribute('stroke','#ffb74d'); base.setAttribute('stroke-width','2'); svg.appendChild(base);
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text'); t.setAttribute('x',cx+rx+6); t.setAttribute('y',(cy+topY)/2); t.textContent='h'; t.setAttribute('fill','#334155'); t.setAttribute('font-size','13'); svg.appendChild(t);
+    const tr = document.createElementNS('http://www.w3.org/2000/svg','text'); tr.setAttribute('x',cx); tr.setAttribute('y',cy-6); tr.textContent='r'; tr.setAttribute('fill','#334155'); tr.setAttribute('font-size','13'); tr.setAttribute('text-anchor','middle'); svg.appendChild(tr);
+  }
+  function drawSphere(svg,r){
+    const scale = 150 / (r*2);
+    const cx = 110, cy = 110; const rad = r*scale;
+    const circ = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circ.setAttribute('cx',cx); circ.setAttribute('cy',cy); circ.setAttribute('r',rad); circ.setAttribute('fill','#b3e5fc'); circ.setAttribute('stroke','#4fc3f7'); circ.setAttribute('stroke-width','2'); svg.appendChild(circ);
+    const dot = document.createElementNS('http://www.w3.org/2000/svg','circle'); dot.setAttribute('cx',cx); dot.setAttribute('cy',cy); dot.setAttribute('r',3); dot.setAttribute('fill','#1565c0'); svg.appendChild(dot);
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text'); t.setAttribute('x',cx+rad+6); t.setAttribute('y',cy); t.textContent='r'; t.setAttribute('fill','#334155'); t.setAttribute('font-size','13'); svg.appendChild(t);
+  }
+
+  // Quiz
+  const quizAnswers = {1:'141.3',2:'1/3',3:'113.04',4:'4πr²'};
+  const quizExpl = {
+    1:'V = 3.14 × 3 × 3 × 5 = 141.3 立方公分',
+    2:'同樣底面與高的圓錐體積是圓柱的三分之一，V = ⅓ × π × r² × h',
+    3:'V = 4/3 × 3.14 × 3³ = 4/3 × 3.14 × 27 = 113.04 立方公分',
+    4:'球的表面積公式為 4πr²'
+  };
+  let quizPicked = {};
+  function pickQuiz(q, el, ans){
+    if(quizPicked[q]) return;
+    quizPicked[q] = true;
+    const fb = document.getElementById('fb'+q);
+    const opts = el.parentElement.querySelectorAll('.opt');
+    opts.forEach(o=>{ o.style.cursor='default'; });
+    if(ans === quizAnswers[q]){
+      el.classList.add('correct'); fb.className='feedback ok';
+      fb.textContent = '✔ 正確！' + quizExpl[q];
+    } else {
+      el.classList.add('wrong'); fb.className='feedback err';
+      fb.textContent = '✘ 錯誤。正確答案是 ' + quizAnswers[q] + '：' + quizExpl[q];
+      opts.forEach(o=>{ if(o.textContent.trim().startsWith(quizAnswers[q]) || o.textContent.includes(quizAnswers[q])) o.classList.add('correct'); });
+    }
+    fb.style.display='block';
+    checkQuizFinish();
+  }
+  function checkQuizFinish(){
+    const keys = Object.keys(quizAnswers);
+    if(keys.every(k=>quizPicked[k])){
+      let correct = 0;
+      keys.forEach(k=>{
+        const sel = document.querySelector('#q'+k+' .opt.selected') || document.querySelector('#fb'+k).previousElementSibling.querySelector('.opt.correct');
+        // count by checking first selected correctness via stored logic
+      });
+      // simpler: count correct classes in each card
+      correct = 0;
+      keys.forEach(k=>{
+        const el = document.getElementById('fb'+k);
+        if(el.textContent.startsWith('✔')) correct++;
+      });
+      document.getElementById('quizScore').textContent = `你的得分：${correct} / ${keys.length}`;
+      document.getElementById('quizScore').style.display = 'block';
+      document.getElementById('btnResetQuiz').style.display = 'inline-block';
+    }
+  }
+  function resetQuiz(){
+    Object.keys(quizAnswers).forEach(q=>{
+      quizPicked[q] = false;
+      const fb = document.getElementById('fb'+q); fb.style.display='none';
+      const opts = document.getElementById('fb'+q).previousElementSibling.querySelectorAll('.opt');
+      opts.forEach(o=>{ o.className='opt'; o.style.cursor='pointer'; });
+    });
+    document.getElementById('quizScore').style.display='none';
+    document.getElementById('btnResetQuiz').style.display='none';
+  }
+
+  // Chat compare
+  const chatData = {
+    cyl: {
+      g: '圓柱體積公式是 V = 底面積 × 高 = π × r² × h。舉例：半徑 3 公分、高 5 公分，V = 3.14 × 3 × 3 × 5 = 141.3 立方公分。',
+      q: '圓柱體積：V = π × r² × h。將底面圓面積乘以高即可得體積，適合用於罐頭、水桶等圓柱形物體。'
+    },
+    cone: {
+      g: '圓錐體積：V = ⅓ × π × r² × h；球體積：V = 4/3 × π × r³。圓錐有頂點，球則完全圓滑沒有棱角。',
+      q: '圓錐：V = ⅓πr²h；球：V = 4/3πr³，表面積 = 4πr²。兩者公式都含 π 與半徑的次方，但球沒有「高」這個概念。'
+    },
+    why: {
+      g: '因為圓錐體積只有圓柱的三分之一。想像用相同底面和高的圓錐盛水，倒三次剛好裝滿一個圓柱，所以公式要乘 ⅓。',
+      q: '可以理解為「三個相同的圓錐體積合起來等於一個圓柱」。因此圓錐體積公式多了一個 ⅓ 係數。'
+    }
+  };
+  function setChatTopic(el, topic){
+    document.querySelectorAll('.chat-topic .chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    const d = chatData[topic];
+    document.getElementById('chatGemma').innerHTML = `<div class="bubble model">${d.g}</div>`;
+    document.getElementById('chatQwen').innerHTML = `<div class="bubble model">${d.q}</div>`;
+  }
+  // init chat with default topic
+  setChatTopic(document.querySelector('.chat-topic .chip.active'), 'cyl');
+
+  // API simulation
+  function tryApi(){
+    const out = document.getElementById('apiOut');
+    const model = document.getElementById('apiModel').value.trim() || 'gemma3:4b';
+    out.style.display = 'block';
+    out.textContent = '連線 http://localhost:11434 並呼叫模型 ' + model + ' …\n(這是模擬介面，實際需本機啟動 Ollama 才會有真實回應)\n\n模擬回覆：圓柱體體積公式 V = π × r² × h，即底面積乘以高。';
+  }
+
+  // Init
+  buildNav();
+  calcVolume();
+</script>
+</body>
+</html>
